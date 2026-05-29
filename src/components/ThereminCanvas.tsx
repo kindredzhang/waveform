@@ -101,7 +101,31 @@ export default function ThereminCanvas({
             handLandmarker.close();
         }
       } catch (e) {
-        console.error("Failed to initialize mediapipe:", e);
+        // Fallback to CPU if GPU delegate fails (common on mobile Safari)
+        console.warn("GPU hand landmarker init failed, retrying with CPU:", e);
+        try {
+          const vision = await FilesetResolver.forVisionTasks(
+              "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+          );
+          const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+              baseOptions: {
+                  modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                  delegate: "CPU"
+              },
+              runningMode: "VIDEO",
+              numHands: 2,
+              minHandDetectionConfidence: 0.5,
+              minHandPresenceConfidence: 0.5,
+              minTrackingConfidence: 0.5
+          });
+          if (active) {
+              handLandmarkerRef.current = handLandmarker;
+          } else {
+              handLandmarker.close();
+          }
+        } catch (e2) {
+          console.error("Failed to initialize mediapipe (CPU fallback also failed):", e2);
+        }
       }
     };
     initMediaPipe();
@@ -137,9 +161,13 @@ export default function ThereminCanvas({
   // Setup / release camera stream
   useEffect(() => {
     if (cameraActive) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 1 &&
+         /Mac/.test(navigator.userAgent));
+      const facingMode = isIOS ? 'environment' : 'user';
       navigator.mediaDevices
-        .getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } })
-        .then((s) => {
+        .getUserMedia({ video: { width: 320, height: 240, facingMode } })
+        .then((s: MediaStream) => {
           setStream(s);
           setCameraError(null);
           if (videoRef.current) {
@@ -147,14 +175,14 @@ export default function ThereminCanvas({
             videoRef.current.play().catch(console.error);
           }
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           console.error('Camera access denied or failed', err);
           setCameraError('Camera blocked or unavailable.');
           setCameraActive(false);
         });
     } else {
       if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
         setStream(null);
       }
       if (videoRef.current) {
@@ -164,7 +192,7 @@ export default function ThereminCanvas({
 
     return () => {
       if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
     };
   }, [cameraActive]);
@@ -830,12 +858,13 @@ export default function ThereminCanvas({
 
       {/* Actual Live webcam video preview block */}
       {cameraActive && (
-        <div className="absolute top-28 left-6 md:left-12 z-30 pointer-events-auto flex flex-col gap-2 scale-100 origin-top-left transition-transform duration-300">
-          <div className="relative w-36 h-36 rounded-full overflow-hidden border border-white/10 shadow-lg bg-black/40 backdrop-blur-md flex items-center justify-center">
+        <div className="absolute top-24 left-4 md:top-28 md:left-12 z-30 pointer-events-auto flex flex-col gap-2 scale-100 origin-top-left transition-transform duration-300">
+          <div className="relative w-24 h-24 md:w-36 md:h-36 rounded-full overflow-hidden border border-white/10 shadow-lg bg-black/40 backdrop-blur-md flex items-center justify-center">
             <video
               ref={videoRef}
               muted
               playsInline
+              crossOrigin="anonymous"
               className="w-full h-full object-cover scale-x-[-1]" // mirror effect
             />
             {/* Ambient visual overlay inside camera grid */}
@@ -869,7 +898,7 @@ export default function ThereminCanvas({
             )}
           </div>
           
-          <div className="flex flex-col items-center gap-0.5 select-none bg-slate-950/40 p-1.5 rounded-lg border border-white/5 backdrop-blur-sm max-w-[144px]">
+          <div className="hidden md:flex flex-col items-center gap-0.5 select-none bg-slate-950/40 p-1.5 rounded-lg border border-white/5 backdrop-blur-sm max-w-[144px]">
             <span className="font-mono text-[9px] text-[#cac4d4]/60 uppercase tracking-widest text-center">
               {t('canvas.hudTitle')}
             </span>
@@ -884,8 +913,8 @@ export default function ThereminCanvas({
         </div>
       )}
 
-      {/* Active Web camera activation toggle button - bottom right panel relative */}
-      <div className="absolute top-28 right-6 md:right-12 z-30 pointer-events-auto flex items-center gap-2">
+      {/* Active Web camera activation toggle button */}
+      <div className="absolute top-24 right-4 md:top-28 md:right-12 z-30 pointer-events-auto flex items-center gap-2">
         {cameraError && (
           <span className="font-sans text-[10px] text-[#ffb4ab] bg-[#93000a]/35 px-2.5 py-1 rounded-full border border-[#ffb4ab]/20">
             {cameraError}
@@ -896,7 +925,7 @@ export default function ThereminCanvas({
             e.stopPropagation(); // Stop trigger sound playing on click!
             toggleWebcam();
           }}
-          className={`px-4 py-2 rounded-full border text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-all ${
+          className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full border text-[10px] md:text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 md:gap-2 transition-all ${
             cameraActive
               ? 'bg-[#44e2cd]/10 border-[#44e2cd]/30 text-[#62fae3]'
               : 'bg-white/5 border-white/15 text-[#d4e4fa] hover:bg-white/10'
@@ -905,13 +934,15 @@ export default function ThereminCanvas({
         >
           {cameraActive ? (
             <>
-              <Camera className="w-4 h-4 text-[#44e2cd]" />
-              {t('canvas.camOn')}
+              <Camera className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#44e2cd]" />
+              <span className="hidden md:inline">{t('canvas.camOn')}</span>
+              <span className="md:hidden">ON</span>
             </>
           ) : (
             <>
-              <CameraOff className="w-4 h-4 opacity-70" />
-              {t('canvas.camOff')}
+              <CameraOff className="w-3.5 h-3.5 md:w-4 md:h-4 opacity-70" />
+              <span className="hidden md:inline">{t('canvas.camOff')}</span>
+              <span className="md:hidden">OFF</span>
             </>
           )}
         </button>
@@ -930,10 +961,10 @@ export default function ThereminCanvas({
               onActivate();
             }}
           >
-            <div className="w-16 h-16 rounded-full bg-[#44e2cd]/10 text-[#44e2cd] border border-[#44e2cd]/20 flex items-center justify-center mb-2 animate-bounce">
+            <div className="w-16 h-16 rounded-full bg-[#44e2cd]/10 text-[#44e2cd] border border-[#44e2cd]/20 flex items-center justify-center mb-2 md:animate-bounce">
               <Wand2 className="w-7 h-7" />
             </div>
-            <h2 className="font-display-lg text-2xl md:text-3.5xl text-[#d4e4fa] tracking-widest uppercase">
+            <h2 className="font-display-lg text-xl md:text-3.5xl text-[#d4e4fa] tracking-widest uppercase">
               {t('canvas.dormantSub')}
             </h2>
             <p className="font-sans text-sm text-[#cac4d4] opacity-80 leading-relaxed px-4">

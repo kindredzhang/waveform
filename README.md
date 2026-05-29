@@ -1,20 +1,16 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Waveform
 
-# Run and deploy your AI Studio app
+A gesture-based virtual theremin and synthesizer. Play music using hand tracking or touch — no instruments needed.
 
-This contains everything you need to run your app locally.
+Built with React, MediaPipe HandLandmarker, and the Web Audio API.
 
-View your app in AI Studio: https://ai.studio/apps/a991a7d6-6a19-4743-9933-d6434dfb7a2c
+## Quick Start
 
-## Run Locally
+```bash
+npm install
+npm run dev
+```
 
-**Prerequisites:**  Node.js
+## Deploy
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+This project is configured for [Vercel](https://vercel.com). Push to main to auto-deploy.
