@@ -34,8 +34,8 @@ export default function App() {
   const [isActivated, setIsActivated] = useState(false);
 
   // Core visual parameters synchronized with interactions
-  const [resonance, setResonance] = useState(432);
-  const [aura, setAura] = useState(68);
+  const [resonance, setResonance] = useState(0);
+  const [aura, setAura] = useState(0);
   const [timbre, setTimbre] = useState<TimbreType>('triangle');
 
   // Modals alignment tracking
