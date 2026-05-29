@@ -197,8 +197,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile: compact telemetry strip — left side, not overlapping camera button */}
-        <div className="md:hidden absolute top-24 left-4 z-30 flex items-center gap-2 pointer-events-auto select-none">
+        {/* Mobile: compact telemetry strip — top-right, above camera button */}
+        <div className="md:hidden absolute top-24 right-4 z-30 flex items-center gap-2 pointer-events-auto select-none">
           <div className="glass-panel bg-[#122131]/40 border border-white/10 rounded-full px-3 py-1.5 shadow-xl backdrop-blur-md flex items-center gap-3">
             <span className={`font-mono font-semibold text-xs transition-colors duration-500 ${getThemeColorClass()}`}>
               {isActivated ? `${resonance}Hz` : '---'}
