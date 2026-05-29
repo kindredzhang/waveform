@@ -927,8 +927,8 @@ export default function ThereminCanvas({
         </div>
       )}
 
-      {/* Active Web camera activation toggle button */}
-      <div className="absolute md:top-28 md:right-12 bottom-24 right-4 z-30 pointer-events-auto flex items-center gap-2">
+      {/* Active Web camera activation toggle button — always top-right, always visible */}
+      <div className="absolute top-[5.5rem] right-4 md:top-28 md:right-12 z-30 pointer-events-auto flex items-center gap-2">
         {cameraError && (
           <span className="font-sans text-[10px] text-[#ffb4ab] bg-[#93000a]/35 px-2.5 py-1 rounded-full border border-[#ffb4ab]/20">
             {cameraError}
