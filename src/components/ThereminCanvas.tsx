@@ -877,6 +877,18 @@ export default function ThereminCanvas({
               }}
             />
 
+            {/* Scanning animation when camera is on but no hands detected yet */}
+            {!leftCentroid && !rightCentroid && !cameraError && (
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Rotating ring scanner */}
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#44e2cd]/70 animate-spin" style={{ animationDuration: '1.5s' }} />
+                <div className="absolute inset-[4px] rounded-full border border-transparent border-b-[#cebdff]/40 animate-spin" style={{ animationDuration: '2.5s', animationDirection: 'reverse' }} />
+                {/* Center pulsing dot */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#44e2cd]/30 animate-ping" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#44e2cd]" />
+              </div>
+            )}
+
             {/* Micro computer vision hand tracking feedback indicators */}
             {leftCentroid && (
               <div
@@ -905,11 +917,11 @@ export default function ThereminCanvas({
               {t('canvas.hudTitle')}
             </span>
             <span className="font-mono text-[8.5px] text-[#62fae3] uppercase tracking-wider text-center font-semibold">
-              {leftCentroid && rightCentroid 
+              {leftCentroid && rightCentroid
                   ? t('canvas.camLock')
-                  : (leftCentroid || rightCentroid) 
-                  ? t('canvas.camSingle') 
-                  : t('canvas.camWait')}
+                  : (leftCentroid || rightCentroid)
+                  ? t('canvas.camSingle')
+                  : 'SCANNING...'}
             </span>
           </div>
         </div>
