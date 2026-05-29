@@ -1,0 +1,6 @@
+{
+  "name": "AetherWave",
+  "description": "An ethereal, gesture-based virtual theremin and synthesizer with visual HUD tracking.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
