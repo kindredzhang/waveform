@@ -183,12 +183,7 @@ export default function ThereminCanvas({
   // Setup / release camera stream
   useEffect(() => {
     if (cameraActive) {
-      const isIOS =
-        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-        (typeof navigator.maxTouchPoints === "number" &&
-          navigator.maxTouchPoints > 1 &&
-          /Mac/.test(navigator.userAgent));
-      const facingMode = isIOS ? "environment" : "user";
+      const facingMode = 'user';
       navigator.mediaDevices
         .getUserMedia({ video: { width: 320, height: 240, facingMode } })
         .then((s: MediaStream) => {
